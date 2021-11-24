@@ -8,11 +8,11 @@ import platform
 import subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer  # python3
 import sys
-
+from timeit import default_timer as timer
 import psutil as psutil
 import requests as requests
 from telegram.ext import Updater, CommandHandler
-
+from datetime import datetime
 
 class BotDB(object):
     filename = "bot.json"
@@ -46,6 +46,7 @@ class ResponseCode:
 
 
 class API:
+    VERSION = "1.1"
     @staticmethod
     def prepare_response(status, response):
         return {"status": status, "response": response}
@@ -55,11 +56,10 @@ class API:
         db = BotDB()
 
         if action == "ping":
-            return API.prepare_response(ResponseCode.OK, "pong")
+            return API.prepare_response(ResponseCode.OK, f"pong:v{API.VERSION}")
         if "secret" not in args or args["secret"] != db.values["SECRET"]:
             return API.prepare_response(ResponseCode.NOT_AUTHORIZED, "Specify special secret")
         if action == "exchange":
-            global updater
             if "step" not in args:
                 return API.prepare_response(ResponseCode.SERVER_CANT_RECOGNIZE_COMMAND, "Specify step")
             if args["step"] == "start":
@@ -79,6 +79,12 @@ class API:
                 return API.prepare_response(ResponseCode.OK, "It's ok")
 
             return API.prepare_response(ResponseCode.SERVER_CANT_RECOGNIZE_COMMAND, "Unknown step")
+        if action == "notify":
+            if "text" not in args:
+                return API.prepare_response(ResponseCode.SERVER_CANT_RECOGNIZE_COMMAND, "Specify text")
+
+            Bot.send_to_all(args["text"], updater, db.values["allows"], args["title"] if "title" in args else "Уведомление")
+            return API.prepare_response(ResponseCode.OK, "It's ok")
         if action == "info":
             info = {
                 "system": platform.system(),
@@ -87,7 +93,8 @@ class API:
                 "ram_total": str(round(psutil.virtual_memory().total / (1024.0 ** 3), 2)) + " GB",
                 "ram_available": str(round(psutil.virtual_memory().available / (1024.0 ** 3), 2)) + " GB",
                 "hdd_total": str(round(psutil.disk_usage('/').total / (1024.0 ** 3), 2)) + " GB",
-                "hdd_free": str(round(psutil.disk_usage('/').free / (1024.0 ** 3), 2)) + " GB"
+                "hdd_free": str(round(psutil.disk_usage('/').free / (1024.0 ** 3), 2)) + " GB",
+                "system_time": str(datetime.now())
             }
             return API.prepare_response(ResponseCode.OK, info)
         if action == "exec":
@@ -111,11 +118,13 @@ class API:
         args.update(_args)
 
         result = []
+
         for server in servers:
+            time_start = timer()
             try:
                 req = requests.post(f"http://{server}/", data=json.dumps({"action": action, "args": args}))
                 d = req.json()
-                d.update({"_server": server})
+                d.update({"_server": server, "_delta": timer() - time_start})
                 result.append(d)
             except Exception as e:
                 pass
@@ -177,7 +186,8 @@ class Bot:
                 "ram_total": "Всего RAM",
                 "ram_available": "Доступно RAM",
                 "hdd_total": "Всего HDD",
-                "hdd_free": "Доступно HDD"
+                "hdd_free": "Доступно HDD",
+                "system_time": "Системное время"
             }
             if response["status"][0] != 200:
                 return f"{response['_server']} => Ошибка({response['status'][1]}): {json.loads(response['response'])}"
@@ -209,7 +219,7 @@ class Bot:
             return
 
         result = API.get_response_from_servers(self.db.values["SERVERS"], "ping", {})
-        formatted = "\n".join(map(lambda x: f"*{x['_server']}*: `{x['response']}`", result))
+        formatted = "\n".join(map(lambda x: f"*{x['_server']}*: `{x['response']}` ({round(x['_delta']*1000, 2)} мс)", result))
         Bot.send(update.effective_chat.id, context, formatted)
 
 
