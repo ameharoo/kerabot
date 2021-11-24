@@ -232,7 +232,7 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_headers(403)
-        self.wfile.write("<div style='text-align:center;'><h1>403 Forbidden</h1></div><hr><span style='font-size:12px;'>Powered by Ameharu 2021</span>".encode("utf-8"))
+        self.wfile.write("<div style='text-align:center;'><h1>403 Forbidden</h1></div><hr><span style='font-size:16px;'>Powered by Ameharu 2021</span>".encode("utf-8"))
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
