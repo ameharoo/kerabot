@@ -231,12 +231,14 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        self._set_headers(200)
-        self.wfile.write("Hello World".encode("utf-8"))
+        self._set_headers(403)
+        self.wfile.write("<div style='text-align:center;'><h1>403 Forbidden</h1></div><hr><span style='font-size:12px;'>Powered by Ameharu 2021</span>".encode("utf-8"))
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
-        post_data = json.loads(self.rfile.read(content_length))  # <--- Gets the data itself
+        raw_data = self.rfile.read(content_length)
+        print(f"POST {datetime.now()} {raw_data}")
+        post_data = json.loads(raw_data)  # <--- Gets the data itself
 
         if not isinstance(post_data, dict) or "action" not in post_data or "args" not in post_data:
             self._set_headers(ResponseCode.NOT_VALID_FORMAT[0])
