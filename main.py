@@ -211,7 +211,7 @@ class Bot:
 
         command = " ".join(args[1:])
         result = API.get_response_from_servers([args[0]], "exec", {"command": command})
-        formatted = "\n".join(map(lambda x: f"*{x['_server']}*: `{x['response']}`", result))
+        formatted = "\n".join(map(lambda x: f"*{x['_server']}*:\n`{x['response']}`", result))
         Bot.send(update.effective_chat.id, context, formatted)
 
     def ping(self, update, context):
