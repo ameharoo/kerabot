@@ -63,12 +63,12 @@ class API:
             if "step" not in args:
                 return API.prepare_response(ResponseCode.SERVER_CANT_RECOGNIZE_COMMAND, "Specify step")
             if args["step"] == "start":
-                API.exchangeStartTime = datetime.datetime.now()
+                API.exchangeStartTime = datetime.now()
                 Bot.send_to_all("Обмен начат.", updater, db.values["allows"], "Обмен")
                 return API.prepare_response(ResponseCode.OK, "It's ok")
             if args["step"] == "end":
                 Bot.send_to_all(
-                    f"Обмен окончен. ({str(datetime.datetime.now() - API.exchangeStartTime) if hasattr(API, 'exchangeStartTime') else 'время неизвестно'})",
+                    f"Обмен окончен. ({str(datetime.now() - API.exchangeStartTime) if hasattr(API, 'exchangeStartTime') else 'время неизвестно'})",
                     updater,
                     db.values["allows"],
                     "Обмен"
