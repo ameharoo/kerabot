@@ -34,6 +34,9 @@ class Updater:
         else:
             print("Заметьте, что поддержка обновлений может некорректно работать ", file=sys.stderr)
 
+    def get_sha(self):
+        return self.__sha
+
     def check_updates(self, force=False, master=False):
         last_commit = requests.get("https://api.github.com/repos/ameharoo/kerabot/commits/master").json()
         if force or (self.__sha is not None and last_commit["sha"] != self.__sha):

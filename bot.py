@@ -15,6 +15,7 @@ class Bot:
         self.updater.dispatcher.add_handler(CommandHandler('stat', self.stat))
         self.updater.dispatcher.add_handler(CommandHandler('exec', self.exec))
         self.updater.dispatcher.add_handler(CommandHandler('ping', self.ping))
+        self.updater.dispatcher.add_handler(CommandHandler('version', self.version))
 
     @staticmethod
     def get_chunks(x, chunk_size):
@@ -96,4 +97,13 @@ class Bot:
         result = API.get_response_from_servers(self.db.values["SERVERS"], "ping", {})
         formatted = "\n".join(
             map(lambda x: f"*{x['_server']}*: `{x['response']}` ({round(x['_delta'] * 1000, 2)} мс)", result))
+        self.send(update.effective_chat.id, formatted)
+
+    def version(self, update, context):
+        if not self.auth_with(update.message.from_user.id):
+            return
+
+        result = API.get_response_from_servers(self.db.values["SERVERS"], "sha_version", {})
+        formatted = "\n".join(
+            map(lambda x: f"*{x['_server']}*: `{str(x['response'])}`", result))
         self.send(update.effective_chat.id, formatted)

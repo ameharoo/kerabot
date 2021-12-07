@@ -9,6 +9,8 @@ import requests
 from botdb import BotDB
 from timeit import default_timer as timer
 
+from updater import Updater
+
 
 class ResponseCode:
     OK = [200, "OK"]
@@ -34,9 +36,11 @@ class API:
             return API.prepare_response(ResponseCode.OK, f"pong:v{API.VERSION}")
         if "secret" not in args or args["secret"] != db.values["SECRET"]:
             return API.prepare_response(ResponseCode.NOT_AUTHORIZED, "Specify special secret")
+        if action == "sha_version":
+            return API.prepare_response(ResponseCode.NOT_AUTHORIZED, "Specify special secret")
         if action == "exchange":
             if "step" not in args:
-                return API.prepare_response(ResponseCode.SERVER_CANT_RECOGNIZE_COMMAND, "Specify step")
+                return API.prepare_response(ResponseCode.OK, Updater(None).get_sha())
             if args["step"] == "start":
                 API.exchangeStartTime = datetime.now()
                 bot.send_to_all("Обмен начат.", db.values["allows"], "Обмен")
