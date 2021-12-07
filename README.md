@@ -1,4 +1,4 @@
-# kerabot
+# Kerabot
 Python-based production server monitor bot
 
 ## Installation
