@@ -12,6 +12,11 @@ class Updater:
     def __init__(self, bot):
         self.bot = bot
 
+        self.__sha = None
+        self.bin_path = "."
+        self.config_path = "."
+        self.sha_path = os.path.join(self.config_path, ".sha")
+
         if platform.system().lower() == "linux":
             self.bin_path = "/usr/bin/kera"
             self.config_path = "/etc/kera"
@@ -27,10 +32,7 @@ class Updater:
 
         else:
             print("Заметьте, что поддержка обновлений может некорректно работать ", file=sys.stderr)
-            self.__sha = None
-            self.bin_path = "."
-            self.config_path = "."
-            self.sha_path = os.path.join(self.config_path, ".sha")
+
 
     def check_updates(self, force=False):
         last_commit = requests.get("https://api.github.com/repos/ameharoo/kerabot/commits/master").json()
