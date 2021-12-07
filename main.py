@@ -56,6 +56,10 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.do_POST()
 
 
+if len(sys.argv) >= 2 and sys.argv[1] == "install":
+    Updater(None).check_updates(True)
+    sys.exit(0)
+
 _db = BotDB()
 updater = telegram.ext.Updater(token=_db.values["TOKEN"], use_context=True)
 bot = Bot(updater)
@@ -66,6 +70,7 @@ github_updater = Updater(bot)
 def check_updates():
     github_updater.check_updates()
     time.sleep(60)
+
 
 
 if len(sys.argv) >= 2 and sys.argv[1] == "master":

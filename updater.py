@@ -12,8 +12,6 @@ class Updater:
     def __init__(self, bot):
         self.bot = bot
 
-
-
         if platform.system().lower() == "linux":
             self.bin_path = "/usr/bin/kera"
             self.config_path = "/etc/kera"
@@ -34,29 +32,33 @@ class Updater:
             self.config_path = "."
             self.sha_path = os.path.join(self.config_path, ".sha")
 
-    def check_updates(self):
+    def check_updates(self, force=False):
         last_commit = requests.get("https://api.github.com/repos/ameharoo/kerabot/commits/master").json()
-        if last_commit["sha"] != self.__sha:
-            self.bot.send_to_all(
-                f"Предложено обновление. Дата: {last_commit['commit']['author']['date']}\n" +
-                f"Автор: @{last_commit['author']['login']}\n" +
-                f"Описание: {last_commit['commit']['message']}\n" +
-                f"SHA: {last_commit['sha']}\n" +
-                f"Обновление будет выполнено автоматически\n" +
-                f"URL: {last_commit['html_url']}\n",
-                title="🆙 Входящее обновление"
-            )
-            self.update(last_commit["sha"])
+        if force or (self.__sha is not None and last_commit["sha"] != self.__sha):
+            if not force:
+                self.bot.send_to_all(
+                    f"Предложено обновление. Дата: {last_commit['commit']['author']['date']}\n" +
+                    f"Автор: @{last_commit['author']['login']}\n" +
+                    f"Описание: {last_commit['commit']['message']}\n" +
+                    f"SHA: {last_commit['sha']}\n" +
+                    f"Обновление будет выполнено автоматически\n" +
+                    f"URL: {last_commit['html_url']}\n",
+                    title="🆙 Входящее обновление"
+                )
+            self.update(last_commit["sha"], force)
 
-    def update(self, new_sha):
+    def update(self, new_sha, force):
         sha_zip = f"{new_sha}.zip"
         new_bin_dir = os.path.join(self.bin_path, new_sha)
         const_bin_dir = os.path.join(self.bin_path, "bin")
 
-        self.bot.send_to_all(
-            f"Происходит обновление файлов. Бот временно не отвечает на запросы.",
-            title="🔄0️⃣ Входящее обновление"
-        )
+        if not force:
+            self.bot.send_to_all(
+                f"Происходит обновление файлов. Бот временно не отвечает на запросы.",
+                title="🔄0️⃣ Входящее обновление"
+            )
+        else:
+            print(f"Происходит обновление файлов.")
 
         url = f"https://api.github.com/repos/ameharoo/kerabot/zipball/{new_sha}"
         response = requests.get(url)
@@ -64,10 +66,13 @@ class Updater:
             with open(sha_zip, 'wb') as f:
                 f.write(response.content)
 
-        self.bot.send_to_all(
-            "",
-            title="🔄1️⃣ Файлы загружены"
-        )
+        if not force:
+            self.bot.send_to_all(
+                "",
+                title="🔄1️⃣ Файлы загружены"
+            )
+        else:
+            print("Файлы загружены")
 
         with zipfile.ZipFile(sha_zip, "r") as zip_ref:
             if not os.path.exists(new_bin_dir):
@@ -76,27 +81,35 @@ class Updater:
 
         os.remove(sha_zip)
 
-        self.bot.send_to_all(
-            "",
-            title="🔄2️⃣ Распаковка завершена"
-        )
+        if not force:
+            self.bot.send_to_all(
+                "",
+                title="🔄2️⃣ Распаковка завершена"
+            )
+        else:
+            print("Распаковка завершена")
 
         if os.path.islink(const_bin_dir):
             os.unlink(const_bin_dir)
+
         os.symlink(os.path.join(new_bin_dir, os.listdir(new_bin_dir)[0]), const_bin_dir)
+
         open(self.sha_path, "w").write(new_sha)
 
-        self.bot.send_to_all(
-            "",
-            title="🔄3️⃣ Установка символьных ссылок успешна"
-        )
+        if not force:
+            self.bot.send_to_all(
+                "",
+                title="🔄3️⃣ Установка символьных ссылок успешна"
+            )
 
-        self.bot.send_to_all(
-            "",
-            title="✅ Обновление установлено"
-        )
+            self.bot.send_to_all(
+                "",
+                title="✅ Обновление установлено"
+            )
 
-        self.restart()
+            self.restart()
+        else:
+            print("Обновление установлено")
 
     def restart(self):
         os.execl(sys.executable, sys.executable, *sys.argv)
