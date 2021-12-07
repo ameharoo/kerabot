@@ -68,8 +68,9 @@ github_updater = Updater(bot)
 
 
 def check_updates():
-    github_updater.check_updates()
-    time.sleep(60)
+    while True:
+        github_updater.check_updates()
+        time.sleep(60)
 
 
 if len(sys.argv) >= 2 and sys.argv[1] == "master":
