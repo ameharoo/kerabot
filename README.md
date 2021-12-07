@@ -3,8 +3,9 @@ Python-based production server monitor bot
 
 ## Installation
 Make this on every servers
-1. Clone this repo
-2. Create and modify file "bot.json" with follow contents:
+1. `git clone https://github.com/ameharoo/kerabot.git`
+2. `python3 kerabot/main.py install`
+3. Create and modify file "`/etc/kera/kera.config.json`" (for non-linux "`./kera.config.json`") with follow contents:
 
 `
 {
@@ -23,7 +24,7 @@ Make this on every servers
 
 ## Usage
 For "master" server:
-`python3 main.bot master`
+`python3 /usr/bin/kera/bin/main.py master`
 
 For "slave" server:
-`python3 main.bot slave`
+`python3 /usr/bin/kera/bin/main.py slave`

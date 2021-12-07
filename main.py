@@ -67,19 +67,19 @@ bot = Bot(updater)
 github_updater = Updater(bot)
 
 
-def check_updates():
+def check_updates(is_master):
     while True:
-        github_updater.check_updates()
+        github_updater.check_updates(master=is_master)
         time.sleep(60)
 
 
 if len(sys.argv) >= 2 and sys.argv[1] == "master":
     bot.register_events()
     updater.start_polling()
-    Thread(target=check_updates).start()
+    Thread(target=check_updates, args=(True,)).start()
     HTTPServer((_db.values["HOST"], _db.values["PORT"]), HandleRequests).serve_forever()
 elif len(sys.argv) >= 2 and sys.argv[1] == "slave":
-    Thread(target=check_updates).start()
+    Thread(target=check_updates, args=(False,)).start()
     HTTPServer((_db.values["HOST"], _db.values["PORT"]), HandleRequests).serve_forever()
 else:
     print("Укажите тип запускаемого агента, добавив аргумент, например: python3 kera.py <master или slave>")

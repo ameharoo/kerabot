@@ -34,10 +34,10 @@ class Updater:
         else:
             print("Заметьте, что поддержка обновлений может некорректно работать ", file=sys.stderr)
 
-    def check_updates(self, force=False):
+    def check_updates(self, force=False, master=False):
         last_commit = requests.get("https://api.github.com/repos/ameharoo/kerabot/commits/master").json()
         if force or (self.__sha is not None and last_commit["sha"] != self.__sha):
-            if not force:
+            if not force or master:
                 self.bot.send_to_all(
                     f"Предложено обновление. Дата: {last_commit['commit']['author']['date']}\n" +
                     f"Автор: @{last_commit['author']['login']}\n" +
@@ -47,14 +47,14 @@ class Updater:
                     f"URL: {last_commit['html_url']}\n",
                     title="🆙 Входящее обновление"
                 )
-            self.update(last_commit["sha"], force)
+            self.update(last_commit["sha"], force, master)
 
-    def update(self, new_sha, force):
+    def update(self, new_sha, force, master=False):
         sha_zip = f"{new_sha}.zip"
         new_bin_dir = os.path.join(self.bin_path, new_sha)
         const_bin_dir = os.path.join(self.bin_path, "bin")
 
-        if not force:
+        if not force or master:
             self.bot.send_to_all(
                 f"Происходит обновление файлов. Бот временно не отвечает на запросы.",
                 title="🔄0️⃣ Входящее обновление"
@@ -68,7 +68,7 @@ class Updater:
             with open(sha_zip, 'wb') as f:
                 f.write(response.content)
 
-        if not force:
+        if not force or master:
             self.bot.send_to_all(
                 "",
                 title="🔄1️⃣ Файлы загружены"
@@ -83,7 +83,7 @@ class Updater:
 
         os.remove(sha_zip)
 
-        if not force:
+        if not force or master:
             self.bot.send_to_all(
                 "",
                 title="🔄2️⃣ Распаковка завершена"
@@ -98,12 +98,13 @@ class Updater:
 
         open(self.sha_path, "w").write(new_sha)
 
-        if not force:
+        if not force or master:
             self.bot.send_to_all(
                 "",
                 title="🔄3️⃣ Установка символьных ссылок успешна"
             )
 
+        if not force:
             self.bot.send_to_all(
                 "",
                 title="✅ Обновление установлено"
