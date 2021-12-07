@@ -104,8 +104,8 @@ class API:
             except Exception as e:
                 result.append({"_server": server,
                                "_error": True,
-                               "_delta": timer() - time_start,
-                               "status": [0, str(e)],
-                               "response": None})
+                               "_delta": -0.01,
+                               "status": [0, "Exception"],
+                               "response": str(e)})
 
         return result

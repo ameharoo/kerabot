@@ -72,7 +72,6 @@ def check_updates():
     time.sleep(60)
 
 
-
 if len(sys.argv) >= 2 and sys.argv[1] == "master":
     bot.register_events()
     updater.start_polling()
